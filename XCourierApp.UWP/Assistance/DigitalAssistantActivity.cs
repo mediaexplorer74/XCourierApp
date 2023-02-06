@@ -1,9 +1,9 @@
-﻿using Android.App;
-using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
+﻿//using Android.App;
+//using Android.Content;
+//using Android.OS;
+//using Android.Runtime;
+//using Android.Views;
+//using Android.Widget;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,11 +19,12 @@ namespace XCourierApp.DigitalAssistance
 		{
 			// startActivity(new Intent(Intent.ACTION_VOICE_COMMAND).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 
-			var intent = new Intent(Intent.ActionVoiceCommand);
-			intent.SetFlags(ActivityFlags.NewTask); 
+			//RnD
+			//var intent = new Intent(Intent.ActionVoiceCommand);
+			//intent.SetFlags(ActivityFlags.NewTask); 
 
 			// trying it this way
-			Android.App.Application.Context.StartActivity(intent);
+			//Android.App.Application.Context.StartActivity(intent);
 		}
 	} // class
 } // namespace

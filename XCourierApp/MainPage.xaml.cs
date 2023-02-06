@@ -12,7 +12,7 @@ using Xamarin.Forms.Inking.Views;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
 using XCourierApp.Storage.Journals;
-using XCourierApp.Droid.Assistance;
+using XCourierApp.DigitalAssistance;
 
 namespace XCourierApp
 {
@@ -227,7 +227,7 @@ namespace XCourierApp
 
 		private void CurrentJournal_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			// TO DO: 
+			// TODO 
 		}
 
 		private void SwipeGestureRecognizer_Swiped(object sender, SwipedEventArgs e)

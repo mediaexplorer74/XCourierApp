@@ -8,10 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using XCourierApp.DigitalAssistance;
+using XCourierApp.Droid.Assistance;
 
 [assembly: Xamarin.Forms.Dependency(typeof(DigitalAssistantActivity))]
-namespace XCourierApp.DigitalAssistance
+namespace XCourierApp.Droid.Assistance
 {
 	public class DigitalAssistantActivity : IDigitalAssistantActivity
 	{

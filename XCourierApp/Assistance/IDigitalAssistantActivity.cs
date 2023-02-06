@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace XCourierApp.Droid.Assistance
+namespace XCourierApp.DigitalAssistance
 {
 	public interface IDigitalAssistantActivity
 	{
