@@ -30,6 +30,9 @@ System.Reflection.TargetInvocationException: Exception has been thrown by the ta
 
 Access to the path 'C:\Users\Admin\source\repos\XCourierApp\XCourierApp.UWP\bin\x64\Debug\AppX\JournalAppStore.litedb' is denied.
 
+## Far future / Additional
+- Think about potring to UNO platform (Win. / Linux Desktops...)
+- ChatGPT integration :)
 
 ## References / Credits
 - https://github.com/danielkornev/XCourierApp	
