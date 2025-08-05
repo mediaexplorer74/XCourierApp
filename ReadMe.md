@@ -1,7 +1,7 @@
-# XCourierApp
+# XCourierApp v1.0.1 -- master branch
 Fork of Daniel Kornev's [XCourierApp](https://github.com/danielkornev/XCourierApp) project.
 
-![Hello from XCourierApp](Images/app_logo.png)
+![Hello from XCourierApp](Images/logo.png)
 
 
 ## About 
@@ -11,7 +11,7 @@ In short, this is the "echo of mythic Microsoft Courier project" for "Booklet PC
 
 
 ## Screenshots
-![Screenshot1](Images/shot1.png)
+![Screenshot1](Images/sshot01.png)
 
 
 ## Status / Progress
@@ -22,8 +22,7 @@ In short, this is the "echo of mythic Microsoft Courier project" for "Booklet PC
 
 ## ToDo
 - More RnD of this Common & Droid projects
-- Transfer image resourses to UWP (iOS) projects (fixed)
-- Catch&Fix the UWP's LiteDB "bug" (fixed?)
+- Solve "Black screen" mystery (for UWP target)
 - Do manual UWP app testing
 
 ## Far future / Additional
