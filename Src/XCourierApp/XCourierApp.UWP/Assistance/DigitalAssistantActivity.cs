@@ -15,16 +15,21 @@ namespace XCourierApp.DigitalAssistance
 {
 	public class DigitalAssistantActivity : IDigitalAssistantActivity
 	{
-		public void OpenDigitalAssistant()
+		public async void OpenDigitalAssistant()
 		{
-			// startActivity(new Intent(Intent.ACTION_VOICE_COMMAND).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            // TODO
+            // startActivity(new Intent(Intent.ACTION_VOICE_COMMAND).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 
-			//RnD
-			//var intent = new Intent(Intent.ActionVoiceCommand);
-			//intent.SetFlags(ActivityFlags.NewTask); 
 
-			// trying it this way
-			//Android.App.Application.Context.StartActivity(intent);
-		}
+            //var intent = new Intent(Intent.ActionVoiceCommand);
+            //intent.SetFlags(ActivityFlags.NewTask); 
+
+            // trying it this way
+            //Android.App.Application.Context.StartActivity(intent);
+            // Start the digital assistant activity
+            
+            //var voiceAssistantLauncher = new Windows.System.Launcher();
+            //await voiceAssistantLauncher.LaunchUriAsync(new Uri("ms-voiceassistant://"));
+        }
 	} // class
 } // namespace

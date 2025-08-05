@@ -12,33 +12,34 @@ In short, this is the "echo of mythic Microsoft Courier project" for "Booklet PC
 
 ## Screenshots
 ![Screenshot1](Images/sshot01.png)
+![Screenshot1](Images/sshot02.png)
 
 
 ## Status / Progress
-- UWP platform/target ("stub") added
-- iOS platform/target ("stub") added
+- UWP platform/target added
 - Via Trae IDE, I plan to fix some platform-dependant things (db lite, images, etc.)
+- Simplest Microsoft Courier mechanics (canvas drawing, and up/down swipes) added 
 
 
 ## ToDo
 - More RnD of this Common & Droid projects
-- Solve "Black screen" mystery (for UWP target)
-- Do manual UWP app testing
+- Solve Page numeration problem for: 1st app start, for pages add/delete operations
+- Do more UWP app testing
 
 ## Far future / Additional
 - Think about potring to UNO platform (Win. / Linux Desktops...)
 - ChatGPT integration :)
 
 ## References / Credits
-- https://github.com/danielkornev/XCourierApp	
-- https://github.com/danielkornev
-- https://github.com/xamarin
+- https://github.com/danielkornev/XCourierAppOriginal project	
+- https://github.com/danielkornev Daniel Kornev, author of original XCourierApp
+- https://github.com/xamarin Xamarin Forms, plugins, etc.
 
 
 ## ..
 AS IS. No support. RnD only!
 
 ## .
-[M][E] July, 5 2025
+[M][E] July, 6 2025
 
 ![Logo](Images/footer.png)

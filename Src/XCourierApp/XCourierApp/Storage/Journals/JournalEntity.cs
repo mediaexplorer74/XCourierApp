@@ -1,6 +1,7 @@
 ﻿using LiteDB;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using XCourierApp.Collections.ObjectModel;
 
@@ -96,6 +97,25 @@ namespace XCourierApp.Storage.Journals
 				}
 				return this._pages;
 			}
+
+			set
+			{
+                if (this._pages != null)
+                {
+                    this._pages.CollectionChanged -= _pages_CollectionChanged;
+                }
+                this._pages = new JournalPagesObservableCollection<JournalPageEntity>(this);
+                this._pages.CollectionChanged += _pages_CollectionChanged;
+
+                try
+                {
+                    this._pages = value;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("JournalEntity - Pages setter error: " + ex.Message);
+                }
+            }
 		}
 
 		private void _pages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

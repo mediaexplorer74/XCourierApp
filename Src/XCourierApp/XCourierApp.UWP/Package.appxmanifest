@@ -66,6 +66,11 @@
     <Capability Name="codeGeneration"/>
     <uap:Capability Name="removableStorage"/>
     <iot:Capability Name="systemManagement"/>
+    <uap:Capability Name="picturesLibrary"/>
+    <uap3:Capability Name="userNotificationListener"/>
+    <uap:Capability Name="videosLibrary"/>
+    <uap:Capability Name="musicLibrary"/>
+    <Capability Name="allJoyn"/>
     <DeviceCapability Name="webcam"/>
     <DeviceCapability Name="lowLevel"/>
     <DeviceCapability Name="location"/>

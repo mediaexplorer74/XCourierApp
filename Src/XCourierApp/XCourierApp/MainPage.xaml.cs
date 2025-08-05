@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -16,233 +16,587 @@ using XCourierApp.DigitalAssistance;
 
 namespace XCourierApp
 {
-	public partial class MainPage : ContentPage
-	{
-		public Storage.StorageContext StorageContext
-		{
-			get; internal set;
-		}
+    public partial class MainPage : ContentPage, INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
 
-		public JournalEntity CurrentJournal
-		{
-			get { return (JournalEntity)GetValue(CurrentJournalProperty); }
-			set { SetValue(CurrentJournalProperty, value); }
-		}
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
-		//// Using a DependencyProperty as the backing store for CurrentJournal.  This enables animation, styling, binding, etc...
-		//public static readonly DependencyProperty CurrentJournalProperty =
-		//	DependencyProperty.Register("CurrentJournal", typeof(JournalEntity), typeof(MainPage), new PropertyMetadata(null));
+        public Storage.StorageContext StorageContext
+        {
+            get; internal set;
+        }
 
-		public static readonly BindableProperty CurrentJournalProperty = BindableProperty.Create("CurrentJournalProperty", typeof(JournalEntity), typeof(MainPage), null);
+        public JournalEntity CurrentJournal
+        {
+            get { return (JournalEntity)GetValue(CurrentJournalProperty); }
+            set { SetValue(CurrentJournalProperty, value); }
+        }
 
-		public MainPage()
-		{
-			InitializeComponent();
+        public static readonly BindableProperty CurrentJournalProperty = BindableProperty.Create("CurrentJournalProperty", typeof(JournalEntity), typeof(MainPage), null);
 
-			// priority is to pane 1
-			twoPaneView.PanePriority = TwoPaneViewPriority.Pane1;
+        private bool _isDualScreen = false;
+        public bool IsDualScreen
+        {
+            get => _isDualScreen;
+            set { if (_isDualScreen != value) { _isDualScreen = value; OnPropertyChanged(nameof(IsDualScreen)); } }
+        }
 
-			LeftInkCanvasView.InkPresenter.InputDeviceTypes = XCoreInputDeviceTypes.Pen;
-			RightInkCanvasView.InkPresenter.InputDeviceTypes = XCoreInputDeviceTypes.Pen;
+        private bool _isInkAvailable = true;
+        public bool IsInkAvailable
+        {
+            get => _isInkAvailable;
+            set { if (_isInkAvailable != value) { _isInkAvailable = value; OnPropertyChanged(nameof(IsInkAvailable)); } }
+        }
 
-			// override
-			// var statusbar = DependencyService.Get<IStatusBarPlatformSpecific>();
-			// statusbar.SetStatusBarColor(Color.Black);
+        public MainPage()
+        {
+            InitializeComponent();
+            this.BindingContext = this;
 
-			// Left Page's InkCanvas
-			LeftInkCanvasView.InkPresenter.StrokesCollected += OnLeftInkCanvasViewStrokesCollected;
-			LeftInkCanvasView.InkPresenter.StrokesErased += LeftInkCanvasViewPresenter_StrokesErased;
+            // Проверка DualScreen
+            try
+            {
+                IsDualScreen = Xamarin.Forms.DualScreen.DualScreenInfo.Current.SpanMode != Xamarin.Forms.DualScreen.TwoPaneViewMode.SinglePane;
+            }
+            catch
+            {
+                IsDualScreen = false;
+            }
 
-			// Right Page's InkCanvas
-			RightInkCanvasView.InkPresenter.StrokesCollected += OnRightInkCanvasViewStrokesCollected;
-			RightInkCanvasView.InkPresenter.StrokesErased += RightInkCanvasViewPresenter_StrokesErased;
+            //TEMP
+            IsDualScreen = true;
 
+            // priority is to pane 1
+            twoPaneView.PanePriority = TwoPaneViewPriority.Pane1;
 
-			#region Storage
-			this.StorageContext = new Storage.StorageContext();
+            // Experimental
+            //twoPaneView.TallModeConfiguration = TwoPaneViewTallModeConfiguration.SinglePane;
 
-			// this.LeftInkCanvasView.InkPresenter.StrokeContainer.G
+            // Проверка Ink
+            try
+            {
+                // Разрешаем InkPresenter использовать мышь и перо
+                LeftInkCanvasView.InkPresenter.InputDeviceTypes = Xamarin.Forms.Inking.XCoreInputDeviceTypes.Pen
+                | Xamarin.Forms.Inking.XCoreInputDeviceTypes.Mouse;
+                System.Diagnostics.Debug.WriteLine("[MainPage] LeftInkCanvasView.InkPresenter.InputDeviceTypes установлен: "
+                + LeftInkCanvasView.InkPresenter.InputDeviceTypes);
 
+                RightInkCanvasView.InkPresenter.InputDeviceTypes = Xamarin.Forms.Inking.XCoreInputDeviceTypes.Pen
+                | Xamarin.Forms.Inking.XCoreInputDeviceTypes.Mouse;
+                System.Diagnostics.Debug.WriteLine("[MainPage] RightInkCanvasView.InkPresenter.InputDeviceTypes установлен: "
+                + RightInkCanvasView.InkPresenter.InputDeviceTypes);
+                IsInkAvailable = true;
+            }
+            catch
+            {
+                IsInkAvailable = false;
+            }
 
-			// this should always return the last journal
-			var lastJournal = this.StorageContext.Journals
-				.Where(j => j.IsSoftDeleted == false)
-				.OrderByDescending(j => j.DateUpdated)
-				.FirstOrDefault();
+            // override
+            // var statusbar = DependencyService.Get<IStatusBarPlatformSpecific>();
+            // statusbar.SetStatusBarColor(Color.Black);
 
-			// loading pages
-			lastJournal.Pages.Load();
+            // Left Page's InkCanvas
+            LeftInkCanvasView.InkPresenter.StrokesCollected += OnLeftInkCanvasViewStrokesCollected;
+            LeftInkCanvasView.InkPresenter.StrokesErased += LeftInkCanvasViewPresenter_StrokesErased;
 
-			// ...
-
-			// loading journal
-			LoadJournal(lastJournal);
-
-			#endregion
-		}
-
-		#region Appearing & Disappearing
-		/// <summary>
-		/// detach the events when disappering
-		/// </summary>
-		protected override void OnDisappearing()
-		{
-			base.OnDisappearing();
-
-			// Left Page's InkCanvas
-			LeftInkCanvasView.InkPresenter.StrokesCollected -= OnLeftInkCanvasViewStrokesCollected;
-			LeftInkCanvasView.InkPresenter.StrokesErased -= LeftInkCanvasViewPresenter_StrokesErased;
-
-			// Right Page's InkCanvas
-			LeftInkCanvasView.InkPresenter.StrokesCollected -= OnRightInkCanvasViewStrokesCollected;
-			LeftInkCanvasView.InkPresenter.StrokesErased -= RightInkCanvasViewPresenter_StrokesErased;
-
-			// TEMPORARY SAVING
-			// binding
-			var pages = this.CurrentJournal.Pages;
-			var leftPage = pages[1];
-			var rightPage = pages[2];
-
-			leftPage.InkLayer = this.LeftInkCanvasView.InkPresenter.StrokeContainer.GetStrokes().ToArray();
-			rightPage.InkLayer = this.RightInkCanvasView.InkPresenter.StrokeContainer.GetStrokes().ToArray();
-
-			this.StorageContext.SavePage(leftPage);
-			this.StorageContext.SavePage(rightPage);
-
-			this.StorageContext.SaveJournal(this.CurrentJournal);
-
-		}
+            // Right Page's InkCanvas
+            RightInkCanvasView.InkPresenter.StrokesCollected += OnRightInkCanvasViewStrokesCollected;
+            RightInkCanvasView.InkPresenter.StrokesErased += RightInkCanvasViewPresenter_StrokesErased;
 
 
-		/// <summary>
-		/// Attach events and initialize the sketch data when appearing
-		/// </summary>
-		protected override void OnAppearing()
-		{
-			base.OnAppearing();
+            #region Storage
+            this.StorageContext = new Storage.StorageContext();
+            System.Diagnostics.Debug.WriteLine("[MainPage] StorageContext создан");
 
-			// Left Page's InkCanvas
-			LeftInkCanvasView.InkPresenter.StrokesCollected += OnLeftInkCanvasViewStrokesCollected;
-			LeftInkCanvasView.InkPresenter.StrokesErased += LeftInkCanvasViewPresenter_StrokesErased;
+            // Получаем последний журнал
+            JournalEntity lastJournal = this.StorageContext.Journals
+            .Where(j => j.IsSoftDeleted == false)
+            .OrderByDescending(j => j.DateUpdated)
+            .FirstOrDefault();
 
-			// Right Page's InkCanvas
-			RightInkCanvasView.InkPresenter.StrokesCollected += OnRightInkCanvasViewStrokesCollected;
-			RightInkCanvasView.InkPresenter.StrokesErased += RightInkCanvasViewPresenter_StrokesErased;
-		}
+            //*******************************************
+            if (lastJournal == null)
+            {
+                System.Diagnostics.Debug.WriteLine("[MainPage] Журналов нет — создаём первый журнал и две страницы...");
+                lastJournal = new Storage.Journals.JournalEntity
+                {
+                    DisplayName = "Мой первый журнал",
+                    DateCreated = DateTime.UtcNow,
+                    DateUpdated = DateTime.UtcNow,
+                    IsSoftDeleted = false
+                };
+                // Гарантируем инициализацию Pages
+                if (lastJournal.Pages == null)
+                {
+                    lastJournal.Pages = new XCourierApp.Collections.ObjectModel
+                            .JournalPagesObservableCollection<Storage.Journals.JournalPageEntity>(lastJournal);
+                }
+                this.StorageContext.Journals.AddJournal(lastJournal);
+                // Создаём первую пару страниц
+                var firstPage = new Storage.Journals.JournalPageEntity
+                {
+                    Id = 1,
+                    DateCreated = DateTime.UtcNow,
+                    DateUpdated = DateTime.UtcNow,
+                    IsCoverPage = false,
+                    IsSoftDeleted = false
+                };
+                var secondPage = new Storage.Journals.JournalPageEntity
+                {
+                    Id = 2,
+                    DateCreated = DateTime.UtcNow,
+                    DateUpdated = DateTime.UtcNow,
+                    IsCoverPage = false,
+                    IsSoftDeleted = false
+                };
+                try
+                {
+                    lastJournal.Pages.AddPage(firstPage);
+                    lastJournal.Pages.AddPage(secondPage);
+                    System.Diagnostics.Debug.WriteLine("[MainPage] Пара страниц успешно добавлена");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("[MainPage] Ошибка при добавлении страниц: " + ex.Message);
+                }
+                this.StorageContext.SaveJournal(lastJournal);
+                lastJournal.Pages.Load(); // обязательно!
+                System.Diagnostics.Debug.WriteLine("[MainPage] Первый журнал и две страницы созданы");
+            }
+            else
+            {
+                // Гарантируем инициализацию Pages
+                if (lastJournal.Pages == null)
+                    lastJournal.Pages = new XCourierApp.Collections.ObjectModel.JournalPagesObservableCollection<Storage.Journals.JournalPageEntity>(lastJournal);
+                lastJournal.Pages.Load();
+                System.Diagnostics.Debug.WriteLine($"[MainPage] Журнал загружен: {lastJournal.DisplayName}, страниц: {lastJournal.Pages.Count}");
+                foreach (var page in lastJournal.Pages)
+                    System.Diagnostics.Debug.WriteLine($"[MainPage] Страница Id: {page.Id}");
+            }
+            //******************************************************************************
 
-		#endregion
+            // loading pages
+            lastJournal.Pages.Load();
 
-		#region Canvas Invalidation
-		private void LeftInkCanvasViewPresenter_StrokesErased(XInkPresenter sender, XInkStrokesErasedEventArgs args)
-		{
-			LeftInkCanvasView.InvalidateCanvas(false, true);
-		}
-
-		private void OnLeftInkCanvasViewStrokesCollected(Xamarin.Forms.Inking.Interfaces.IInkPresenter sender, XInkStrokesCollectedEventArgs args)
-		{
-			LeftInkCanvasView.InvalidateCanvas(false, true);
-		}
-
-		private void RightInkCanvasViewPresenter_StrokesErased(XInkPresenter sender, XInkStrokesErasedEventArgs args)
-		{
-			RightInkCanvasView.InvalidateCanvas(false, true);
-		}
-
-		private void OnRightInkCanvasViewStrokesCollected(Xamarin.Forms.Inking.Interfaces.IInkPresenter sender, XInkStrokesCollectedEventArgs args)
-		{
-			RightInkCanvasView.InvalidateCanvas(false, true);
-		}
+            // loading journal
+            LoadJournal(lastJournal);
+            #endregion
+        }//
 
 
-		protected bool DeviceIsSpanned => DualScreenInfo.Current.SpanMode != TwoPaneViewMode.SinglePane;
-
-		private void LeftInkCanvasView_Painting(object sender, SKCanvas e)
-		{
-			e.Clear(SKColor.Empty);
-		}
-
-		private void RightInkCanvasView_Painting(object sender, SKCanvas e)
-		{
-			e.Clear(SKColor.Empty);
-		}
-
-		#endregion
+        // LeftInkCanvasView_Painting
+        //private void LeftInkCanvasView_Painting(object sender, SKPaintSurfaceEventArgs e)
+        /*private void LeftInkCanvasView_Painting(object sender, SKCanvas e)
+        {
+            //if (e.Surface != null)// && e.Surface.Canvas != null)
+            {
+                //e.Clear(SKColors.AliceBlue);
 
 
-		private async void LoadJournal(JournalEntity journalEntity)
-		{
-			this.CurrentJournal = journalEntity;
+                System.Diagnostics.Debug.WriteLine("[MainPage] LeftInkCanvasView_Painting вызван");
+                //var canvas = e.Surface.Canvas;
+                //canvas.Clear(SKColors.White); // Clear the canvas with a white background
 
-			// binding
-			var pages = journalEntity.Pages;
-			var leftPage = pages[1];
-			var rightPage = pages[2];
+                // You can add your custom painting logic here
+                // For example, you can draw a rectangle or a circle
+                // canvas.DrawRect(new SKRect(10, 10, 100, 100), new SKPaint { Color = SKColors.Black });
 
-			if (leftPage.InkLayer != null)
-			{
-				LoadInkStrokesFromInkLayer(leftPage.InkLayer, this.LeftInkCanvasView);
-			}
+                // If you want to draw the ink strokes, you can use the following code
+                var inkPresenter = LeftInkCanvasView.InkPresenter;
+                if (inkPresenter != null)
+                {
+                    foreach (var stroke in inkPresenter.StrokeContainer.GetStrokes())
+                    {
+                        //canvas.Draw(stroke, true);
+                    }
+                }
+            }
+        }*/
 
-			if (rightPage.InkLayer != null)
-				LoadInkStrokesFromInkLayer(rightPage.InkLayer, this.RightInkCanvasView);
+        /*private void RightInkCanvasView_Painting(object sender, SKCanvas e)
+        {
+            //if (e.Surface != null)// && e.Surface.Canvas != null)
+            {
+                System.Diagnostics.Debug.WriteLine("[MainPage] RightInkCanvasView_Painting вызван");
+                //var canvas = e.Surface.Canvas;
+                //canvas.Clear(SKColors.White); // Clear the canvas with a white background
 
-			//this.currentJournalBook.ItemsSource = journalEntity.Pages;
-			//this.currentJournalBook.CurrentSheetIndex = journalEntity.LastOpenPage;
+                // You can add your custom painting logic here
+                // For example, you can draw a rectangle or a circle
+                // canvas.DrawRect(new SKRect(10, 10, 100, 100), new SKPaint { Color = SKColors.Black });
 
-			// update current journal's metadata
-			// UpdateCurrentJournalMetadata(journalEntity);
+                // If you want to draw the ink strokes, you can use the following code
+                var inkPresenter = LeftInkCanvasView.InkPresenter;
+                if (inkPresenter != null)
+                {
+                    foreach (var stroke in inkPresenter.StrokeContainer.GetStrokes())
+                    {
+                        //canvas.Draw(stroke, true);
+                    }
+                }
+            }
+        }*/
 
-			//var page1 = this.CurrentJournal.Pages[0];
+
+        #region Appearing & Disappearing
+        /// <summary>
+        /// detach the events when disappering
+        /// </summary>
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            // Left Page's InkCanvas
+            LeftInkCanvasView.InkPresenter.StrokesCollected -= OnLeftInkCanvasViewStrokesCollected;
+            LeftInkCanvasView.InkPresenter.StrokesErased -= LeftInkCanvasViewPresenter_StrokesErased;
+
+            // Right Page's InkCanvas
+            RightInkCanvasView.InkPresenter.StrokesCollected -= OnRightInkCanvasViewStrokesCollected;
+            RightInkCanvasView.InkPresenter.StrokesErased -= RightInkCanvasViewPresenter_StrokesErased;
+
+            // Сохраняем InkLayer для текущих страниц
+            if (CurrentJournal != null && CurrentJournal.Pages.Count > 0)
+            {
+                var pages = this.CurrentJournal.Pages;
+                var leftPage = (CurrentPageIndex < pages.Count) ? pages[CurrentPageIndex] : null;
+                var rightPage = (CurrentPageIndex + 1 < pages.Count) ? pages[CurrentPageIndex + 1] : null;
+
+                if (leftPage != null)
+                {
+                    leftPage.InkLayer = this.LeftInkCanvasView.InkPresenter.StrokeContainer.GetStrokes().ToArray();
+                    this.StorageContext.SavePage(leftPage);
+                }
+                if (rightPage != null)
+                {
+                    rightPage.InkLayer = this.RightInkCanvasView.InkPresenter.StrokeContainer.GetStrokes().ToArray();
+                    this.StorageContext.SavePage(rightPage);
+                }
+                this.StorageContext.SaveJournal(this.CurrentJournal);
+            }
+        }
 
 
-			this.CurrentJournal.PropertyChanged += CurrentJournal_PropertyChanged;
+        /// <summary>
+        /// Attach events and initialize the sketch data when appearing
+        /// </summary>
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
 
-			// this.book.ItemsSource = this.CurrentJournal.Pages;
+            // Left Page's InkCanvas
+            LeftInkCanvasView.InkPresenter.StrokesCollected += OnLeftInkCanvasViewStrokesCollected;
+            LeftInkCanvasView.InkPresenter.StrokesErased += LeftInkCanvasViewPresenter_StrokesErased;
 
-			// this.LeftPageNumber = this.book.CurrentPage;
-			// this.RightPageNumber = this.LeftPageNumber + 1;
-		}
+            // Right Page's InkCanvas
+            RightInkCanvasView.InkPresenter.StrokesCollected += OnRightInkCanvasViewStrokesCollected;
+            RightInkCanvasView.InkPresenter.StrokesErased += RightInkCanvasViewPresenter_StrokesErased;
+        }
 
-		private void LoadInkStrokesFromInkLayer(XInkStroke[] inkLayer, InkCanvasView inkCanvasView)
-		{
-			foreach (var stroke in inkLayer)
-			{
-				if (stroke.DrawingAttributes.Color.A == 0)
-				{
-					stroke.DrawingAttributes.Color = Xamarin.Forms.Color.FromRgba(stroke.DrawingAttributes.Color.R, stroke.DrawingAttributes.Color.G, stroke.DrawingAttributes.Color.B, 255);
-				}
-				stroke.UpdateBounds();
-			}
+        #endregion
 
-			Dispatcher.BeginInvokeOnMainThread(delegate
-			{
-				//inkCanvasView.BackgroundColor = sketchData.BackgroundColor;
-				//InkCanvas.CanvasSize = new Size(sketchData.Width, sketchData.Height);
-				inkCanvasView.InkPresenter.StrokeContainer.Clear();
-				inkCanvasView.InkPresenter.StrokeContainer.Add(inkLayer);
+        #region Canvas Invalidation
+        private void LeftInkCanvasViewPresenter_StrokesErased(XInkPresenter sender, XInkStrokesErasedEventArgs args)
+        {
+            LeftInkCanvasView.InvalidateCanvas(false, true);
+        }
 
-				inkCanvasView.InvalidateCanvas(false, true);
-			});
-		}
+        private void OnLeftInkCanvasViewStrokesCollected(Xamarin.Forms.Inking.Interfaces.IInkPresenter sender,
+        XInkStrokesCollectedEventArgs args)
+        {
+            LeftInkCanvasView.InvalidateCanvas(false, true);
+        }
 
-		private void CurrentJournal_PropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			// TODO 
-		}
+        private void RightInkCanvasViewPresenter_StrokesErased(XInkPresenter sender, XInkStrokesErasedEventArgs args)
+        {
+            RightInkCanvasView.InvalidateCanvas(false, true);
+        }
 
-		private void SwipeGestureRecognizer_Swiped(object sender, SwipedEventArgs e)
-		{
-			this.LeftStartMenuGrid.IsVisible = true;
-		}
+        private void OnRightInkCanvasViewStrokesCollected(Xamarin.Forms.Inking.Interfaces.IInkPresenter sender,
+        XInkStrokesCollectedEventArgs args)
+        {
+            RightInkCanvasView.InvalidateCanvas(false, true);
+        }
 
-		private void LeftStartMenuSwipeGestureRecognizer_Swiped(object sender, SwipedEventArgs e)
-		{
-			this.LeftStartMenuGrid.IsVisible = false;
-		}
 
-		private void InvokeDigitalAssistantButton_Clicked(object sender, EventArgs e)
-		{
-			DependencyService.Get<IDigitalAssistantActivity>().OpenDigitalAssistant();
-		}
-	} // class 
+        protected bool DeviceIsSpanned => DualScreenInfo.Current.SpanMode != TwoPaneViewMode.SinglePane;
+
+        private void LeftInkCanvasView_Painting(object sender, SKCanvas e)
+        {
+            e.Clear(SKColor.Empty);
+        }
+
+        private void RightInkCanvasView_Painting(object sender, SKCanvas e)
+        {
+            e.Clear(SKColor.Empty);
+        }
+
+        #endregion
+
+
+        private async void LoadJournal(JournalEntity journalEntity)
+        {
+            this.CurrentJournal = journalEntity;
+
+            // binding
+            var pages = journalEntity.Pages;
+            int leftIdx = CurrentPageIndex;
+            int rightIdx = CurrentPageIndex + 1;
+            var leftPage = (leftIdx < pages.Count) ? pages[leftIdx] : null;
+            var rightPage = (rightIdx < pages.Count) ? pages[rightIdx] : null;
+
+            if (leftPage != null && leftPage.InkLayer != null && leftPage.InkLayer.Length > 0)
+                LoadInkStrokesFromInkLayer(leftPage.InkLayer, this.LeftInkCanvasView);
+            else
+                this.LeftInkCanvasView.InkPresenter.StrokeContainer.Clear();
+
+            if (rightPage != null && rightPage.InkLayer != null && rightPage.InkLayer.Length > 0)
+                LoadInkStrokesFromInkLayer(rightPage.InkLayer, this.RightInkCanvasView);
+            else
+                this.RightInkCanvasView.InkPresenter.StrokeContainer.Clear();
+
+            this.CurrentJournal.PropertyChanged += CurrentJournal_PropertyChanged;
+        }
+
+        private void LoadInkStrokesFromInkLayer(XInkStroke[] inkLayer, InkCanvasView inkCanvasView)
+        {
+            foreach (var stroke in inkLayer)
+            {
+                if (stroke.DrawingAttributes.Color.A == 0)
+                {
+                    stroke.DrawingAttributes.Color = Xamarin.Forms.Color.FromRgba(
+                        stroke.DrawingAttributes.Color.R,
+                        stroke.DrawingAttributes.Color.G,
+                        stroke.DrawingAttributes.Color.B, 255);
+                }
+                stroke.UpdateBounds();
+            }
+
+            Dispatcher.BeginInvokeOnMainThread(delegate
+            {
+                //inkCanvasView.BackgroundColor = sketchData.BackgroundColor;
+                //InkCanvas.CanvasSize = new Size(sketchData.Width, sketchData.Height);
+                inkCanvasView.InkPresenter.StrokeContainer.Clear();
+                inkCanvasView.InkPresenter.StrokeContainer.Add(inkLayer);
+
+                inkCanvasView.InvalidateCanvas(false, true);
+            });
+        }
+
+        private void CurrentJournal_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            // TODO 
+        }
+
+        private void SwipeGestureRecognizer_Swiped(object sender, SwipedEventArgs e)
+        {
+            this.LeftStartMenuGrid.IsVisible = true;
+        }
+
+        private void LeftStartMenuSwipeGestureRecognizer_Swiped(object sender, SwipedEventArgs e)
+        {
+            this.LeftStartMenuGrid.IsVisible = false;
+        }
+
+        private void AddPageButton_Clicked(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("[BottomBar] Добавить пару страниц");
+            if (CurrentJournal != null)
+            {
+                int nextId = (CurrentJournal.Pages.Count > 0) ? CurrentJournal.Pages.Max(p => p.Id) + 1 : 1;
+                var page1 = new Storage.Journals.JournalPageEntity
+                {
+                    Id = nextId,
+                    DateCreated = DateTime.UtcNow,
+                    DateUpdated = DateTime.UtcNow,
+                    IsCoverPage = false,
+                    IsSoftDeleted = false
+                };
+                var page2 = new Storage.Journals.JournalPageEntity
+                {
+                    Id = nextId + 1,
+                    DateCreated = DateTime.UtcNow,
+                    DateUpdated = DateTime.UtcNow,
+                    IsCoverPage = false,
+                    IsSoftDeleted = false
+                };
+                CurrentJournal.Pages.AddPage(page1);
+                CurrentJournal.Pages.AddPage(page2);
+                StorageContext.SavePage(page1);
+                StorageContext.SavePage(page2);
+                StorageContext.SaveJournal(CurrentJournal);
+                System.Diagnostics.Debug.WriteLine($"[BottomBar] Пара страниц {page1.Id}-{page2.Id} добавлена");
+                ShowPagesAtIndex(CurrentPageIndex);
+                OnPropertyChanged(nameof(PageNumbersDisplay));
+            }
+        }
+
+        private void DeletePageButton_Clicked(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("[BottomBar] Удалить пару страниц");
+            if (CurrentJournal != null && CurrentJournal.Pages.Count >= 2)
+            {
+                var pages = CurrentJournal.Pages;
+                var toRemove = new List<Storage.Journals.JournalPageEntity>();
+                if (CurrentPageIndex < pages.Count)
+                    toRemove.Add(pages[CurrentPageIndex]);
+                if (CurrentPageIndex + 1 < pages.Count)
+                    toRemove.Add(pages[CurrentPageIndex + 1]);
+                foreach (var page in toRemove)
+                {
+                    Exception ex;
+                    bool ok = StorageContext.TryRemovePage(CurrentJournal, page, out ex);
+                    if (ok)
+                    {
+                        pages.Remove(page);
+                        System.Diagnostics.Debug.WriteLine($"[BottomBar] Страница {page.Id} удалена");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[BottomBar] Ошибка удаления страницы {page.Id}: {(ex != null ? ex.Message : "unknown error")}");
+                    }
+                }
+                StorageContext.SaveJournal(CurrentJournal);
+                if (CurrentPageIndex >= pages.Count)
+                    CurrentPageIndex = Math.Max(0, pages.Count - 2);
+                ShowPagesAtIndex(CurrentPageIndex);
+                OnPropertyChanged(nameof(PageNumbersDisplay));
+            }
+        }
+
+        private int _currentPageIndex = 0;
+        public int CurrentPageIndex
+        {
+            get => _currentPageIndex;
+            set
+            {
+                if (_currentPageIndex != value)
+                {
+                    _currentPageIndex = value;
+                    OnPropertyChanged(nameof(CurrentPageIndex));
+                    UpdatePageNumbersDisplay();
+                    ShowPagesAtIndex(_currentPageIndex);
+                }
+            }
+        }
+
+        private string _pageNumbersDisplay = "Стр. 1-2";
+        public string PageNumbersDisplay
+        {
+            get => _pageNumbersDisplay;
+            set { if (_pageNumbersDisplay != value) { _pageNumbersDisplay = value; OnPropertyChanged(nameof(PageNumbersDisplay)); } }
+        }
+
+        private void UpdatePageNumbersDisplay()
+        {
+            int left = CurrentPageIndex + 1;
+            int right = Math.Min(CurrentPageIndex + 2, (CurrentJournal?.Pages?.Count ?? 0));
+            if (CurrentJournal?.Pages?.Count > 0)
+                PageNumbersDisplay = $"Стр. {left}-{right}";
+            else
+                PageNumbersDisplay = "Стр. -";
+        }
+
+        private void PrevPageButton_Clicked(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("[BottomBar] Листать назад");
+            if (CurrentJournal != null && CurrentJournal.Pages.Count > 0 && CurrentPageIndex > 0)
+            {
+                SaveCurrentPagesInk();
+                CurrentPageIndex = Math.Max(0, CurrentPageIndex - 2);
+            }
+        }
+
+        private void NextPageButton_Clicked(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("[BottomBar] Листать вперёд");
+            if (CurrentJournal != null && CurrentJournal.Pages.Count > 0 && CurrentPageIndex + 2 < CurrentJournal.Pages.Count)
+            {
+                SaveCurrentPagesInk();
+                CurrentPageIndex = Math.Min(CurrentJournal.Pages.Count - 2, CurrentPageIndex + 2);
+            }
+        }
+
+        private void ShowPagesAtIndex(int index)
+        {
+            if (CurrentJournal == null || CurrentJournal.Pages.Count < 2)
+            {
+                this.LeftInkCanvasView.IsEnabled = false;
+                this.RightInkCanvasView.IsEnabled = false;
+                OnPropertyChanged(nameof(PageNumbersDisplay));
+                return;
+            }
+            this.LeftInkCanvasView.IsEnabled = true;
+            this.RightInkCanvasView.IsEnabled = true;
+            var pages = CurrentJournal.Pages;
+            var leftPage = (index < pages.Count) ? pages[index] : null;
+            var rightPage = (index + 1 < pages.Count) ? pages[index + 1] : null;
+
+            if (leftPage != null && leftPage.InkLayer != null && leftPage.InkLayer.Length > 0)
+                LoadInkStrokesFromInkLayer(leftPage.InkLayer, this.LeftInkCanvasView);
+            else
+                this.LeftInkCanvasView.InkPresenter.StrokeContainer.Clear();
+
+            if (rightPage != null && rightPage.InkLayer != null && rightPage.InkLayer.Length > 0)
+                LoadInkStrokesFromInkLayer(rightPage.InkLayer, this.RightInkCanvasView);
+            else
+                this.RightInkCanvasView.InkPresenter.StrokeContainer.Clear();
+
+            System.Diagnostics.Debug.WriteLine($"[MainPage] Показаны страницы: {index + 1} и {index + 2}");
+        }
+
+        private void SaveCurrentPagesInk()
+        {
+            if (CurrentJournal == null || CurrentJournal.Pages.Count == 0)
+                return;
+            var pages = CurrentJournal.Pages;
+            var leftPage = (CurrentPageIndex < pages.Count) ? pages[CurrentPageIndex] : null;
+            var rightPage = (CurrentPageIndex + 1 < pages.Count) ? pages[CurrentPageIndex + 1] : null;
+
+            if (leftPage != null)
+                leftPage.InkLayer = this.LeftInkCanvasView.InkPresenter.StrokeContainer.GetStrokes().ToArray();
+            if (rightPage != null)
+                rightPage.InkLayer = this.RightInkCanvasView.InkPresenter.StrokeContainer.GetStrokes().ToArray();
+            StorageContext.SaveJournal(CurrentJournal);
+        }
+
+        private void AssistantButton_Clicked(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("[BottomBar] Ассистент (AI)");
+            InvokeDigitalAssistantButton_Clicked(sender, e);
+        }
+
+        private void SaveButton_Clicked(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("[BottomBar] Сохранить");
+            if (CurrentJournal != null && CurrentJournal.Pages.Count > 0)
+            {
+                var pages = CurrentJournal.Pages;
+                var leftPage = (CurrentPageIndex < pages.Count) ? pages[CurrentPageIndex] : null;
+                var rightPage = (CurrentPageIndex + 1 < pages.Count) ? pages[CurrentPageIndex + 1] : null;
+
+                if (leftPage != null)
+                {
+                    leftPage.InkLayer = this.LeftInkCanvasView.InkPresenter.StrokeContainer.GetStrokes().ToArray();
+                    StorageContext.SavePage(leftPage);
+                }
+                if (rightPage != null)
+                {
+                    rightPage.InkLayer = this.RightInkCanvasView.InkPresenter.StrokeContainer.GetStrokes().ToArray();
+                    StorageContext.SavePage(rightPage);
+                }
+                StorageContext.SaveJournal(CurrentJournal);
+                System.Diagnostics.Debug.WriteLine("[BottomBar] Журнал и страницы сохранены");
+            }
+        }
+
+        private void InvokeDigitalAssistantButton_Clicked(object sender, EventArgs e)
+        {
+            DependencyService.Get<IDigitalAssistantActivity>().OpenDigitalAssistant();
+        }
+    } // class 
 } // namespace

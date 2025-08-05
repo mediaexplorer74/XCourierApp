@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:dualScreen="clr-namespace:Xamarin.Forms.DualScreen;assembly=Xamarin.Forms.DualScreen"
@@ -6,42 +6,90 @@
 			 xmlns:yummy="clr-namespace:Xamarin.Forms.PancakeView;assembly=Xamarin.Forms.PancakeView"
              x:Class="XCourierApp.MainPage">
 
-	<dualScreen:TwoPaneView x:Name="twoPaneView" 
-		MinWideModeWidth="1351"
-        MinTallModeHeight="1800"
-		Pane1Length="*"
-		Pane2Length="*"
-		TallModeConfiguration="SinglePane">
-		<dualScreen:TwoPaneView.Pane1>
-			<Grid Padding="0">
-				<Grid.GestureRecognizers>
-					<SwipeGestureRecognizer Direction="Up" Swiped="SwipeGestureRecognizer_Swiped"/>
-				</Grid.GestureRecognizers>
-				<Image x:Name="LeftPagePaperImage" Source="paper_1.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Aspect="AspectFill" IsVisible="True" />
-				<inking_views:InkCanvasView Margin="0,0,0,0" x:Name="LeftInkCanvasView" Painting="LeftInkCanvasView_Painting"
-											MinimumHeightRequest="1800" MinimumWidthRequest="2700" 
-											HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" CanvasWidth="2700" CanvasHeight="1800" />
+    <Grid RowDefinitions="*,Auto">
+        <!-- MinWideModeWidth="1351"
+            MinTallModeHeight="1800"-->
+        <dualScreen:TwoPaneView x:Name="twoPaneView" 
+            MinWideModeWidth="750"
+            MinTallModeHeight="900"
+            Pane1Length="*"
+            Pane2Length="*"
+            TallModeConfiguration="SinglePane"
+            Grid.Row="0">
+            <dualScreen:TwoPaneView.Pane1>
+                <Grid Padding="0">
+                    <Grid.GestureRecognizers>
+                        <SwipeGestureRecognizer Direction="Up" Swiped="SwipeGestureRecognizer_Swiped"/>
+                    </Grid.GestureRecognizers>
+                    <Grid BackgroundColor="Transparent">
+                        <Image x:Name="LeftPagePaperImage" 
+                               Source="Assets/Images/paper_3.png" 
+                               HorizontalOptions="FillAndExpand" 
+                               VerticalOptions="FillAndExpand" 
+                               Aspect="AspectFill" 
+                               IsVisible="True" />
+                        <inking_views:InkCanvasView Margin="0,0,0,0" x:Name="LeftInkCanvasView" Painting="LeftInkCanvasView_Painting"
+                                                MinimumHeightRequest="1800" MinimumWidthRequest="2700" 
+                                                HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" CanvasWidth="2700" CanvasHeight="1800"
+                                                IsVisible="{Binding IsInkAvailable}"/>
+                    </Grid>
+                    <Label Text="Ink недоступен. Используйте мышь или обновите Windows Ink." 
+                        IsVisible="{Binding IsInkAvailable, Converter={StaticResource InverseBoolConverter}}"
+                        HorizontalOptions="Center" VerticalOptions="Center" FontSize="Large"/>
+                    <yummy:PancakeView BackgroundColor="#550788FA" CornerRadius="10" Margin="30" IsClippedToBounds="true" 
+                        HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" x:Name="LeftStartMenuGrid" IsVisible="False">
+                        <yummy:PancakeView.GestureRecognizers>
+                            <SwipeGestureRecognizer Direction="Down" x:Name="LeftStartMenuSwipeGestureRecognizer" Swiped="LeftStartMenuSwipeGestureRecognizer_Swiped"/>
+                        </yummy:PancakeView.GestureRecognizers>
+                        <Button x:Name="InvokeDigitalAssistantButton" HeightRequest="50" WidthRequest="50" MinimumHeightRequest="50" MinimumWidthRequest="50" 
+                                Text="AI" 
+                                Clicked="InvokeDigitalAssistantButton_Clicked"/>
+                    </yummy:PancakeView>
+                </Grid>
+            </dualScreen:TwoPaneView.Pane1>
+            <dualScreen:TwoPaneView.Pane2>
+                <Grid Padding="0" IsVisible="{Binding IsDualScreen}">
+                    <Grid BackgroundColor="Transparent">
+                        <Image x:Name="RightPagePaperImage" Source="Assets/Images/paper_6.png" 
+                               RotationY="180" HorizontalOptions="FillAndExpand" 
+                               VerticalOptions="FillAndExpand" 
+                               Aspect="AspectFill" 
+                               IsVisible="True"/>
+                        <inking_views:InkCanvasView Margin="0,0,0,0" x:Name="RightInkCanvasView" Painting="RightInkCanvasView_Painting"
+                                                MinimumHeightRequest="1800" MinimumWidthRequest="2700" 
+                                                HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" CanvasWidth="2700" CanvasHeight="1800"
+                                                IsVisible="{Binding IsInkAvailable}"/>
+                    </Grid>
+                    <Label Text="Ink недоступен. Используйте мышь или обновите Windows Ink." 
+                        IsVisible="{Binding IsInkAvailable, Converter={StaticResource InverseBoolConverter}}"
+                        HorizontalOptions="Center" VerticalOptions="Center" FontSize="Large"/>
+                </Grid>
+            </dualScreen:TwoPaneView.Pane2>
+        </dualScreen:TwoPaneView>
 
-				<yummy:PancakeView BackgroundColor="#550788FA" CornerRadius="10" Margin="30" IsClippedToBounds="true" 
-								   HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" x:Name="LeftStartMenuGrid" IsVisible="False">
-					<yummy:PancakeView.GestureRecognizers>
-						<SwipeGestureRecognizer Direction="Down" x:Name="LeftStartMenuSwipeGestureRecognizer" Swiped="LeftStartMenuSwipeGestureRecognizer_Swiped"/>
-					</yummy:PancakeView.GestureRecognizers>
-					<!--<Image Source="unicorn.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Aspect="AspectFill" />-->
-					<Button x:Name="InvokeDigitalAssistantButton" HeightRequest="50" WidthRequest="50" MinimumHeightRequest="50" MinimumWidthRequest="50" Text="AI" Clicked="InvokeDigitalAssistantButton_Clicked"/>
-				</yummy:PancakeView>
-			</Grid>
-		</dualScreen:TwoPaneView.Pane1>
-		<dualScreen:TwoPaneView.Pane2>
-			<Grid Padding="0">
-				<Image x:Name="RightPagePaperImage" Source="paper_1.png" RotationY="180" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Aspect="AspectFill" IsVisible="True"/>
-				<inking_views:InkCanvasView Margin="0,0,0,0" x:Name="RightInkCanvasView" Painting="RightInkCanvasView_Painting"
-											MinimumHeightRequest="1800" MinimumWidthRequest="2700" 
-											HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" CanvasWidth="2700" CanvasHeight="1800"/>
+        <!-- Bottom App Bar -->
+        <Grid Grid.Row="1" HeightRequest="64" BackgroundColor="#DDFFFFFF" Padding="12,0" RowSpacing="0" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="1" Text="+ Страница" Clicked="AddPageButton_Clicked" StyleId="AddPageButton"/>
+            <Button Grid.Column="2" Text="🗑️ Удалить" Clicked="DeletePageButton_Clicked" StyleId="DeletePageButton"/>
+            <Button Grid.Column="3" Text="◀" Clicked="PrevPageButton_Clicked" StyleId="PrevPageButton"/>
+            <Label Grid.Column="4"
+                   Text="{Binding PageNumbersDisplay}" 
+                   VerticalOptions="Center" HorizontalOptions="Center" FontSize="Medium"/>
+            <Button Grid.Column="5" Text="▶" Clicked="NextPageButton_Clicked" StyleId="NextPageButton"/>
+            <Button Grid.Column="6" Text="🤖 Ассистент" Clicked="AssistantButton_Clicked" StyleId="AssistantButton"/>
+            <Button Grid.Column="7" Text="💾 Сохранить" Clicked="SaveButton_Clicked" StyleId="SaveButton"/>
+        </Grid>
 
 
-			</Grid>
-		</dualScreen:TwoPaneView.Pane2>
-	</dualScreen:TwoPaneView>
+    </Grid>
 
 </ContentPage>
