@@ -17,18 +17,14 @@ In short, this is the "echo of mythic Microsoft Courier project" for "Booklet PC
 ## Status / Progress
 - UWP platform/target ("stub") added
 - iOS platform/target ("stub") added
+- Via Trae IDE, I plan to fix some platform-dependant things (db lite, images, etc.)
 
 
 ## ToDo
 - More RnD of this Common & Droid projects
-- Transfer image resourses to UWP (iOS) projects
-- Catch&Fix the UWP's LiteDB "bug":
-
-System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. 
-
----> System.UnauthorizedAccessException: 
-
-Access to the path 'C:\Users\Admin\source\repos\XCourierApp\XCourierApp.UWP\bin\x64\Debug\AppX\JournalAppStore.litedb' is denied.
+- Transfer image resourses to UWP (iOS) projects (fixed)
+- Catch&Fix the UWP's LiteDB "bug" (fixed?)
+- Do manual UWP app testing
 
 ## Far future / Additional
 - Think about potring to UNO platform (Win. / Linux Desktops...)
@@ -44,4 +40,6 @@ Access to the path 'C:\Users\Admin\source\repos\XCourierApp\XCourierApp.UWP\bin\
 AS IS. No support. RnD only!
 
 ## .
-[m][e] 2023
+[M][E] July, 5 2025
+
+![Logo](Images/footer.png)
