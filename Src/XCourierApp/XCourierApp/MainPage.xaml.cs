@@ -36,7 +36,8 @@ namespace XCourierApp
             set { SetValue(CurrentJournalProperty, value); }
         }
 
-        public static readonly BindableProperty CurrentJournalProperty = BindableProperty.Create("CurrentJournalProperty", typeof(JournalEntity), typeof(MainPage), null);
+        public static readonly BindableProperty CurrentJournalProperty = 
+            BindableProperty.Create("CurrentJournalProperty", typeof(JournalEntity), typeof(MainPage), null);
 
         private bool _isDualScreen = false;
         public bool IsDualScreen
@@ -172,8 +173,11 @@ namespace XCourierApp
             {
                 // Гарантируем инициализацию Pages
                 if (lastJournal.Pages == null)
-                    lastJournal.Pages = new XCourierApp.Collections.ObjectModel.JournalPagesObservableCollection<Storage.Journals.JournalPageEntity>(lastJournal);
+                    lastJournal.Pages = new XCourierApp.Collections.ObjectModel
+                        .JournalPagesObservableCollection<Storage.Journals.JournalPageEntity>(lastJournal);
+
                 lastJournal.Pages.Load();
+
                 System.Diagnostics.Debug.WriteLine($"[MainPage] Журнал загружен: {lastJournal.DisplayName}, страниц: {lastJournal.Pages.Count}");
                 foreach (var page in lastJournal.Pages)
                     System.Diagnostics.Debug.WriteLine($"[MainPage] Страница Id: {page.Id}");
@@ -188,59 +192,6 @@ namespace XCourierApp
             #endregion
         }//
 
-
-        // LeftInkCanvasView_Painting
-        //private void LeftInkCanvasView_Painting(object sender, SKPaintSurfaceEventArgs e)
-        /*private void LeftInkCanvasView_Painting(object sender, SKCanvas e)
-        {
-            //if (e.Surface != null)// && e.Surface.Canvas != null)
-            {
-                //e.Clear(SKColors.AliceBlue);
-
-
-                System.Diagnostics.Debug.WriteLine("[MainPage] LeftInkCanvasView_Painting вызван");
-                //var canvas = e.Surface.Canvas;
-                //canvas.Clear(SKColors.White); // Clear the canvas with a white background
-
-                // You can add your custom painting logic here
-                // For example, you can draw a rectangle or a circle
-                // canvas.DrawRect(new SKRect(10, 10, 100, 100), new SKPaint { Color = SKColors.Black });
-
-                // If you want to draw the ink strokes, you can use the following code
-                var inkPresenter = LeftInkCanvasView.InkPresenter;
-                if (inkPresenter != null)
-                {
-                    foreach (var stroke in inkPresenter.StrokeContainer.GetStrokes())
-                    {
-                        //canvas.Draw(stroke, true);
-                    }
-                }
-            }
-        }*/
-
-        /*private void RightInkCanvasView_Painting(object sender, SKCanvas e)
-        {
-            //if (e.Surface != null)// && e.Surface.Canvas != null)
-            {
-                System.Diagnostics.Debug.WriteLine("[MainPage] RightInkCanvasView_Painting вызван");
-                //var canvas = e.Surface.Canvas;
-                //canvas.Clear(SKColors.White); // Clear the canvas with a white background
-
-                // You can add your custom painting logic here
-                // For example, you can draw a rectangle or a circle
-                // canvas.DrawRect(new SKRect(10, 10, 100, 100), new SKPaint { Color = SKColors.Black });
-
-                // If you want to draw the ink strokes, you can use the following code
-                var inkPresenter = LeftInkCanvasView.InkPresenter;
-                if (inkPresenter != null)
-                {
-                    foreach (var stroke in inkPresenter.StrokeContainer.GetStrokes())
-                    {
-                        //canvas.Draw(stroke, true);
-                    }
-                }
-            }
-        }*/
 
 
         #region Appearing & Disappearing
@@ -323,16 +274,77 @@ namespace XCourierApp
         }
 
 
-        protected bool DeviceIsSpanned => DualScreenInfo.Current.SpanMode != TwoPaneViewMode.SinglePane;
-
-        private void LeftInkCanvasView_Painting(object sender, SKCanvas e)
+        protected bool DeviceIsSpanned
         {
-            e.Clear(SKColor.Empty);
+            get
+            {
+                return DualScreenInfo.Current.SpanMode != TwoPaneViewMode.SinglePane;
+            }
         }
 
-        private void RightInkCanvasView_Painting(object sender, SKCanvas e)
+
+        // TODO: add "books" (journals), etc.
+
+        private void LeftInkCanvasView_Painting(object sender, SKCanvas canvas)
         {
-            e.Clear(SKColor.Empty);
+            System.Diagnostics.Debug.WriteLine("[MainPage] LeftInkCanvasView_Painting вызван");
+
+            if (canvas != null)
+            {
+                //canvas.Clear(SKColor.Empty);
+                // canvas.Clear(SKColors.AliceBlue);
+
+                //canvas.Clear(SKColors.White); // Clear the canvas with a white background
+
+                // You can add your custom painting logic here
+                // For example, you can draw a rectangle or a circle
+                canvas.DrawRect(new SKRect(10, 10, 100, 100), new SKPaint { Color = SKColors.Black });
+
+                // If you want to draw the ink strokes, you can use the following code
+                var inkPresenter = LeftInkCanvasView.InkPresenter;
+                if (inkPresenter != null)
+                {
+                    foreach (var stroke in inkPresenter.StrokeContainer.GetStrokes())
+                    {
+                        canvas.Draw(stroke, true);
+                    }
+                }
+            }
+            else
+            {
+                //var canvas = e.Surface.Canvas;
+            }
+        }
+
+        private void RightInkCanvasView_Painting(object sender, SKCanvas canvas)
+        {
+            System.Diagnostics.Debug.WriteLine("[MainPage] RightInkCanvasView_Painting вызван");
+
+            if (canvas != null)
+            {
+                //canvas.Clear(SKColor.Empty);
+                // canvas.Clear(SKColors.AliceBlue);
+
+                //canvas.Clear(SKColors.White); // Clear the canvas with a white background
+
+                // You can add your custom painting logic here
+                // For example, you can draw a rectangle or a circle
+                canvas.DrawRect(new SKRect(10, 10, 100, 100), new SKPaint { Color = SKColors.Green });
+
+                // If you want to draw the ink strokes, you can use the following code
+                var inkPresenter = LeftInkCanvasView.InkPresenter;
+                if (inkPresenter != null)
+                {
+                    foreach (var stroke in inkPresenter.StrokeContainer.GetStrokes())
+                    {
+                        canvas.Draw(stroke, true);
+                    }
+                }
+            }
+            else
+            {
+                //var canvas = e.Surface.Canvas;
+            }
         }
 
         #endregion
@@ -429,7 +441,7 @@ namespace XCourierApp
                 StorageContext.SavePage(page1);
                 StorageContext.SavePage(page2);
                 StorageContext.SaveJournal(CurrentJournal);
-                System.Diagnostics.Debug.WriteLine($"[BottomBar] Пара страниц {page1.Id}-{page2.Id} добавлена");
+                System.Diagnostics.Debug.WriteLine($"[BottomBar] Пара страниц с id {page1.Id} и {page2.Id} добавлена");
                 ShowPagesAtIndex(CurrentPageIndex);
                 OnPropertyChanged(nameof(PageNumbersDisplay));
             }
@@ -438,7 +450,9 @@ namespace XCourierApp
         private void DeletePageButton_Clicked(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("[BottomBar] Удалить пару страниц");
-            if (CurrentJournal != null && CurrentJournal.Pages.Count >= 2)
+
+            // Удаляем текущую пару страниц, если этих пар больше 1 (т.е. страниц больше двух)
+            if (CurrentJournal != null && CurrentJournal.Pages.Count > 2)
             {
                 var pages = CurrentJournal.Pages;
                 var toRemove = new List<Storage.Journals.JournalPageEntity>();
@@ -453,11 +467,11 @@ namespace XCourierApp
                     if (ok)
                     {
                         pages.Remove(page);
-                        System.Diagnostics.Debug.WriteLine($"[BottomBar] Страница {page.Id} удалена");
+                        System.Diagnostics.Debug.WriteLine($"[BottomBar] Страница с id {page.Id} удалена");
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"[BottomBar] Ошибка удаления страницы {page.Id}: {(ex != null ? ex.Message : "unknown error")}");
+                        System.Diagnostics.Debug.WriteLine($"[BottomBar] Ошибка удаления страницы с id {page.Id}: {(ex != null ? ex.Message : "unknown error")}");
                     }
                 }
                 StorageContext.SaveJournal(CurrentJournal);
@@ -465,6 +479,10 @@ namespace XCourierApp
                     CurrentPageIndex = Math.Max(0, pages.Count - 2);
                 ShowPagesAtIndex(CurrentPageIndex);
                 OnPropertyChanged(nameof(PageNumbersDisplay));
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[BottomBar] Удаления страниц отменено. В журнале должна оставаться хотя бы пара страниц");
             }
         }
 
@@ -561,6 +579,7 @@ namespace XCourierApp
                 leftPage.InkLayer = this.LeftInkCanvasView.InkPresenter.StrokeContainer.GetStrokes().ToArray();
             if (rightPage != null)
                 rightPage.InkLayer = this.RightInkCanvasView.InkPresenter.StrokeContainer.GetStrokes().ToArray();
+
             StorageContext.SaveJournal(CurrentJournal);
         }
 
@@ -596,7 +615,18 @@ namespace XCourierApp
 
         private void InvokeDigitalAssistantButton_Clicked(object sender, EventArgs e)
         {
-            DependencyService.Get<IDigitalAssistantActivity>().OpenDigitalAssistant();
+            //TODO
+            //DependencyService.Get<IDigitalAssistantActivity>().OpenDigitalAssistant();
+
+            //TEMP
+            if (!this.LeftStartMenuGrid.IsVisible)
+            {
+                this.LeftStartMenuGrid.IsVisible = true;
+            }
+            else 
+            {
+                this.LeftStartMenuGrid.IsVisible = false;
+            }
         }
     } // class 
 } // namespace

@@ -1,6 +1,7 @@
 ﻿using LiteDB;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -131,15 +132,15 @@ namespace XCourierApp.Storage
 			var pages = journal.Pages;
 
 			#region Creating Front Cover & First Two Pages
-			JournalPageEntity cover = new JournalPageEntity
-			{
-				Id = 1,
-				DateCreated = DateTime.UtcNow,
-				DateUpdated = DateTime.UtcNow,
-				IsCoverPage = true
-			};
+			//JournalPageEntity cover = new JournalPageEntity
+			//{
+			//	Id = 1,
+			//	DateCreated = DateTime.UtcNow,
+			//	DateUpdated = DateTime.UtcNow,
+			//	IsCoverPage = true
+			//};
 
-			journal.Pages.AddPage(cover);
+			//journal.Pages.AddPage(cover);
 
 			JournalPageEntity page1 = new JournalPageEntity
 			{
@@ -271,7 +272,9 @@ namespace XCourierApp.Storage
 
 					if (pageInCollection == null)
 					{
-						exception = new KeyNotFoundException("Page exists in memory, but doesn't exist in the storage in Journal: " + journalEntity.DisplayName);
+						Debug.WriteLine("[ex] StorageContent: Page exists in memory, but doesn't exist in the storage in Journal: " + journalEntity.DisplayName);
+
+                        exception = new KeyNotFoundException("Page exists in memory, but doesn't exist in the storage in Journal: " + journalEntity.DisplayName);
 						result = false;
 					}
 

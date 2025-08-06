@@ -6,12 +6,10 @@
 			 xmlns:yummy="clr-namespace:Xamarin.Forms.PancakeView;assembly=Xamarin.Forms.PancakeView"
              x:Class="XCourierApp.MainPage">
 
-    <Grid RowDefinitions="*,Auto">
-        <!-- MinWideModeWidth="1351"
-            MinTallModeHeight="1800"-->
+    <Grid RowDefinitions="*,Auto">     
         <dualScreen:TwoPaneView x:Name="twoPaneView" 
-            MinWideModeWidth="750"
-            MinTallModeHeight="900"
+            MinWideModeWidth="1351"
+            MinTallModeHeight="1800"
             Pane1Length="*"
             Pane2Length="*"
             TallModeConfiguration="SinglePane"
@@ -28,9 +26,13 @@
                                VerticalOptions="FillAndExpand" 
                                Aspect="AspectFill" 
                                IsVisible="True" />
-                        <inking_views:InkCanvasView Margin="0,0,0,0" x:Name="LeftInkCanvasView" Painting="LeftInkCanvasView_Painting"
+                        <inking_views:InkCanvasView Margin="0,0,0,0" x:Name="LeftInkCanvasView" 
+                                                    Painting="LeftInkCanvasView_Painting"
                                                 MinimumHeightRequest="1800" MinimumWidthRequest="2700" 
-                                                HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" CanvasWidth="2700" CanvasHeight="1800"
+                                                HorizontalOptions="FillAndExpand" 
+                                                VerticalOptions="FillAndExpand" 
+                                                CanvasWidth="2700" 
+                                                CanvasHeight="1800"
                                                 IsVisible="{Binding IsInkAvailable}"/>
                     </Grid>
                     <Label Text="Ink недоступен. Используйте мышь или обновите Windows Ink." 
@@ -38,14 +40,19 @@
                         HorizontalOptions="Center" VerticalOptions="Center" FontSize="Large"/>
                     <yummy:PancakeView BackgroundColor="#550788FA" CornerRadius="10" Margin="30" IsClippedToBounds="true" 
                         HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" x:Name="LeftStartMenuGrid" IsVisible="False">
+                        
                         <yummy:PancakeView.GestureRecognizers>
-                            <SwipeGestureRecognizer Direction="Down" x:Name="LeftStartMenuSwipeGestureRecognizer" Swiped="LeftStartMenuSwipeGestureRecognizer_Swiped"/>
+                            <SwipeGestureRecognizer Direction="Down" 
+                                                    x:Name="LeftStartMenuSwipeGestureRecognizer" 
+                                                    Swiped="LeftStartMenuSwipeGestureRecognizer_Swiped"/>
                         </yummy:PancakeView.GestureRecognizers>
+                        
                         <Button x:Name="InvokeDigitalAssistantButton" HeightRequest="50" WidthRequest="50" MinimumHeightRequest="50" MinimumWidthRequest="50" 
                                 Text="AI" 
                                 Clicked="InvokeDigitalAssistantButton_Clicked"/>
                     </yummy:PancakeView>
                 </Grid>
+                
             </dualScreen:TwoPaneView.Pane1>
             <dualScreen:TwoPaneView.Pane2>
                 <Grid Padding="0" IsVisible="{Binding IsDualScreen}">

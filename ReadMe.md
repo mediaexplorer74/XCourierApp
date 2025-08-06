@@ -1,7 +1,7 @@
-# XCourierApp v1.0.1 -- master branch
+# XCourierApp v1.0.2 -- master branch
 Fork of Daniel Kornev's [XCourierApp](https://github.com/danielkornev/XCourierApp) project.
 
-![Hello from XCourierApp](Images/logo.png)
+![Logo](Images/logo.png)
 
 
 ## About 
@@ -17,21 +17,20 @@ In short, this is the "echo of mythic Microsoft Courier project" for "Booklet PC
 
 ## Status / Progress
 - UWP platform/target added
-- Via Trae IDE, I plan to fix some platform-dependant things (db lite, images, etc.)
-- Simplest Microsoft Courier mechanics (canvas drawing, and up/down swipes) added 
+- Simplest Microsoft Courier mechanics (fulfilled rect primitive canvas drawing, and up/down swipes for left pane) added 
 
 
 ## ToDo
 - More RnD of this Common & Droid projects
-- Solve Page numeration problem for: 1st app start, for pages add/delete operations
+- Realize "book" (journals?) "collection", and some meta-data automation.. =)
 - Do more UWP app testing
 
 ## Far future / Additional
 - Think about potring to UNO platform (Win. / Linux Desktops...)
-- ChatGPT integration :)
+- Some AI (LLM or Cloud?) integration :)
 
 ## References / Credits
-- https://github.com/danielkornev/XCourierAppOriginal project	
+- https://github.com/danielkornev/XCourierApp Original "XCourierApp" project (Android only?)	
 - https://github.com/danielkornev Daniel Kornev, author of original XCourierApp
 - https://github.com/xamarin Xamarin Forms, plugins, etc.
 
